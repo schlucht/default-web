@@ -55,7 +55,7 @@ gulp.task('tslint', (done) => {
  * Compile TS
  */
 gulp.task('ts',  (done) => {
-    gulp.src(`${src}assets/ts/*.ts`) 
+    gulp.src(`${src}assets/ts/**/*.ts`) 
         .pipe(plumber())
         .pipe(ts(
             'tsconfig.json'
