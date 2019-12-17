@@ -14,6 +14,7 @@ var gulp            = require('gulp'),
     htmlmin         = require('gulp-html-minifier'),
     browserSync     = require('browser-sync'),
     ts              = require('gulp-typescript'),
+    tslint          = require('gulp-tslint'),
     imagemin        = require('gulp-imagemin');
 
 var src             = './src/',
@@ -38,11 +39,24 @@ gulp.task('sass', (done) => {
     done();
 });
 
+/** 
+ * TSLINT
+ *
+ */
+gulp.task('tslint', (done) => {
+    gulp.src(`${src}assets/ts/*.ts`)
+        .pipe(tslint({
+            formatter: "verbose"
+        }))
+        .pipe(tslint.report());
+    done();
+});
 /**
  * Compile TS
  */
 gulp.task('ts',  (done) => {
     gulp.src(`${src}assets/ts/*.ts`) 
+        .pipe(plumber())
         .pipe(ts(
             'tsconfig.json'
         ))
