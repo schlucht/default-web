@@ -20,12 +20,14 @@ var gulp            = require('gulp'),
 var src             = './src/',
     dist            = './dist/';
 
+var tsProject = ts.createProject('./tsconfig.json');
+
 
 /**
  * MINIFY SASS
  */
-gulp.task('sass', (done) => {
-    gulp.src(`${src}assets/sass/*.sass`)  
+function css(done){
+    gulp.src(`${src}sass/*.sass`)  
         .pipe(sourcemaps.init())
         .pipe(plumber())
         .pipe(sass())
@@ -34,41 +36,33 @@ gulp.task('sass', (done) => {
         .pipe(cleanCss()) 
         .pipe(rename({ suffix: '.min'}))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(`${dist}assets/css`))
+        .pipe(gulp.dest(`${dist}css`))
         .pipe(browserSync.stream());
     done();
-});
+};
 
 /** 
  * TSLINT
  *
  */
-gulp.task('tslint', (done) => {
-    gulp.src(`${src}assets/ts/*.ts`)
+function tslint(done){
+    gulp.src(`${src}ts/**/*.ts`)
         .pipe(tslint({
             formatter: "verbose"
         }))
         .pipe(tslint.report());
     done();
-});
+}
 /**
  * Compile TS
  */
-gulp.task('ts',  (done) => {
-    gulp.src(`${src}assets/ts/**/*.ts`) 
-        .pipe(plumber())
-        .pipe(ts(
-            'tsconfig.json'
-        ))
-        .pipe(gulp.dest(`${src}assets/js`) );
-    done();
-});
+
 
 /**
  * MINIFY JS
  */
-gulp.task('js', (done) => {
-    gulp.src(`${src}assets/js/*.js`)  
+function js(done){
+    gulp.src(`${src}js/**/*.js`)  
         .pipe(sourcemaps.init())
         .pipe(plumber())
         .pipe(concat('global.js'))
@@ -82,34 +76,43 @@ gulp.task('js', (done) => {
         .pipe(uglify())        
         .pipe(rename({ suffix: '.min'}))
         .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(`${dist}assets/js`))
+        .pipe(gulp.dest(`${dist}js`))
         .pipe(browserSync.stream());
     done();
-});
+}
+
+function typscript(done){
+    gulp.src(`${src}/ts/**/*.ts`) 
+        .pipe(plumber())
+        .pipe(tsProject())
+        .pipe(gulp.dest(`${src}js`) );
+    done();
+};
+
+
 
 /**
  * MINIFY HTML
  */
-gulp.task('html', (done) => {
+function html(cb){
     gulp.src(`${dist}*.html`, {force: true})
         .pipe(clean());
-    gulp.src(`${src}*.html`)
+    gulp.src(`${src}**/*.html`)
         .pipe(htmlmin({ collapseWhitespace: true }))
         .pipe(gulp.dest(dist))
         .pipe(browserSync.stream());
-    done();
-});
+    cb();
+}
 /**
  * IMAGE MIN
  */
 
-gulp.task('jpgs', function() {
-    return gulp.src(`${src}img/*`)
+function jpgs(cb) {
+    gulp.src(`${src}assets/img/*`)
     .pipe(imagemin({ progressive: true }))
-    .pipe(gulp.dest(`${dist}img`));
-});
-
-
+    .pipe(gulp.dest(`${dist}assets/img`));
+    cb();
+}
 
 /**
  * WATCH
@@ -117,10 +120,15 @@ gulp.task('jpgs', function() {
 gulp.task('default', () => {
     browserSync.init({
         server: './dist'
-    });
-
-    gulp.watch(`${src}*.html`, gulp.series('html'));
-    gulp.watch(`${src}assets/sass/**/*.sass`, gulp.series('sass'));
-    gulp.watch(`${src}assets/ts/**/*.ts`, gulp.series('ts'));
-    gulp.watch(`${src}assets/js/**/*.js`, gulp.series('js'));    
+    });    
+    gulp.watch(`${src}**/*.html`, gulp.series(html));
+    gulp.watch(`${src}sass/**/*.sass`, gulp.series(sass));
+    gulp.watch(`${src}ts/**/*.ts`, gulp.series(ts));
+    gulp.watch(`${src}js/**/*.js`, gulp.series(js));    
 });
+gulp.task('tslint', gulp.series(tslint));
+gulp.task('builds', gulp.series(css
+                            , jpgs  
+                            , typscript                          
+                            , js
+                            , html));
