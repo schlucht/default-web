@@ -53,9 +53,7 @@ function tslint(done){
         .pipe(tslint.report());
     done();
 }
-/**
- * Compile TS
- */
+
 
 
 /**
@@ -80,7 +78,9 @@ function js(done){
         .pipe(browserSync.stream());
     done();
 }
-
+/**
+ * Compile TS
+ */
 function typscript(done){
     gulp.src(`${src}/ts/**/*.ts`) 
         .pipe(plumber())
