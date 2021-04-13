@@ -1,7 +1,7 @@
 {
     "files.exclude": {
-        "dist": false,
+        "dist": true,
         "node_modules": true,
-        "src/js": false
+        "src/js":true 
     }
 }
